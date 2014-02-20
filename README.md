@@ -8,16 +8,16 @@ a parallel version based on the multiprocessing module.
 Basic usage
 -----------
 
-The constructor ABC.ABCSampler object takes references to functions:
+The sampler comes in two flavor: a non-parallel version (in module ABC.py) and
+a parallel version (in module ABCmp.py). Both interfaces are mostly identical.
 
-[f_prior]
-generates samples from the prior distribution
+The main class is ABC.ABCSampler (ABCmp.ABCmp respectively). Its constructor takes references to functions:
 
-[f_model]
-takes an output from f_prior, and returns a sample from the model
+* @f_prior@ generates samples from the prior distribution
 
-[f_summarize]
-takes an output from f_model, and returns summary statistics
+* @f_model@ takes an output from f_prior, and returns a sample from the model
+
+* @f_summarize@ takes an output from f_model, and returns summary statistics
 
 
 
