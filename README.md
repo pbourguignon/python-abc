@@ -25,7 +25,9 @@ The main class is ABC.ABCSampler (ABCmp.ABCmp respectively). Its constructor tak
 If these functions are available from a single module *user_module*, then a
 simple code like would do the job:
 
-    import user_module
+    from user_module import some_function as f_prior
+    from user_module import some_other_function as f_model
+    from user_module import yet_another_function as f_summarize
     import ABC
 
     # Load your data
