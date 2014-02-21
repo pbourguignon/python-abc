@@ -25,10 +25,13 @@ def lt_prior(h_params2):
     A realization of the parameter 
     """
     
-    return {'mu_x':       _gauss_pos(*h_params2['mu_x']),
+    while True:
+        param = {'mu_x':       _gauss_pos(*h_params2['mu_x']),
             'sigma_x2':   gammavariate(*h_params2['sigma_x2']),
             'beta_y':     gammavariate(*h_params2['beta_y']),
             'beta_o':     gammavariate(*h_params2['beta_o']),}
+        if param['beta_y'] < param['beta_o']:
+            return param
 
 def lt_model(params, nb_generations):
     """
