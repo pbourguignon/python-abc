@@ -9,9 +9,13 @@ import ABC
 import multiprocessing
 import sys
 import datetime
+from ctypes import c_double
+DEBUG = False
 
 class ABCmp(object):
     def __init__(self, data, f_prior, f_model, f_summarize, nworkers=2):
+        if DEBUG is True:
+            sys.stderr.write("Debug mode activated\n")
         self.nworkers = nworkers        
         self.f_summarize, self.f_prior, self.f_model = f_summarize, f_prior, f_model        
         self.data_summary = self.f_summarize(data)
@@ -33,51 +37,68 @@ class ABCmp(object):
     def sample(self, nsamples, acc_ratio):
         queue = multiprocessing.Queue(1000)
         res = multiprocessing.Queue(1000)
-        t_high = multiprocessing.Value('f')
         
         samplers = [Sampler(queue, self.f_prior, self.f_model, self.f_summarize) \
                                 for ii in range(self.nworkers*2/3)]
         
-        evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
-                        for ii in range(self.nworkers/3)]
+        
         
         for w in samplers:
             w.start()
         
 
-        ntest = int(10*nsamples * acc_ratio)
+        ntest = int(1.0/acc_ratio)
         samples = []
 
         for ii in range(ntest):
             params, summary = queue.get()
             dist = self.f_distance(summary)
-            samples.append((params, dist))
+            samples.append(dist)
         
-        min_val = min(samples, key=(lambda x: x[1]))
-        thr = min_val[1]
-        t_high = max(samples, key=(lambda x: x[1]))[1]
+        s_samples = sorted(samples)
+        thr = s_samples[int(.4*ntest)]
+        #t_high = (thr + max(samples, key=(lambda x: x[1]))[1])/2.0
+        t_high = multiprocessing.Value(c_double,s_samples[-1])
+        #sys.stderr.write("t_high: " + str(t_high) + '\n')
         #print "Queues tuned"
         
+        evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
+                        for ii in range(self.nworkers/3)]
         for s in evaluators:
             s.start()
+
+
         samples = [[],[]]
         
         for ii in range(nsamples):
+
+            if ii % (nsamples / 100) == 0:
+                sys.stderr.write("\rSampling "+ str(ii / (nsamples/100)) + "% completed")
+                sys.stderr.flush()
+                
             params, dist = res.get()
+            if params is None:
+                break
             if dist < thr:
                 samples[0].append((params, dist))
             else:
                 samples[1].append((params, dist))
             
-            if ii % (nsamples / 100) == 0:
-                sys.stderr.write("\rSampling "+ str(ii / (nsamples/100)) + "% completed")
-                sys.stderr.flush()
-                        
+            
+        sys.stderr.write("\rSampling 100% completed\n")
+
+
+
         for w in samplers:
             w.terminate()
         for s in evaluators:
             s.terminate()
-        
+        if DEBUG is True:
+            sys.stderr.write("Lower queue size: " + str(len(samples[0])) + '\n')
+            sys.stderr.write("Higher queue size: " + str(len(samples[1])) + '\n')
+
+
+
         res = []
         cur_slice = 0
         ntarget = int(nsamples * acc_ratio)
@@ -91,6 +112,7 @@ class ABCmp(object):
         return res
 
     
+
 class Sampler(multiprocessing.Process):
     def __init__(self, queue, f_prior, f_model, f_summarize):
         multiprocessing.Process.__init__(self)
@@ -113,10 +135,10 @@ class Evaluator(multiprocessing.Process):
         while True:
             params, summary = self.queue.get()
             dist = self.f_distance(summary)
-            if dist < self.t_high:
+            if dist < self.t_high.value:
                 self.res.put((params, dist))
             else:
-                del params, summary
+                self.res.put((None, None))
 
 
 if __name__ == '__main__':
