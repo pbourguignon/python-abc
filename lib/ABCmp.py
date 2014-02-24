@@ -8,7 +8,6 @@ Created on Wed Feb 12 15:43:00 2014
 import ABC
 import multiprocessing
 import sys
-import datetime
 from ctypes import c_double
 DEBUG = False
 
@@ -17,7 +16,8 @@ class ABCmp(object):
         if DEBUG is True:
             sys.stderr.write("Debug mode activated\n")
         self.nworkers = nworkers        
-        self.f_summarize, self.f_prior, self.f_model = f_summarize, f_prior, f_model        
+        self.f_summarize, self.f_prior, self.f_model = \
+                                            f_summarize, f_prior, f_model        
         self.data_summary = self.f_summarize(data)
         self.f_distance = self.learn_distance()
         
@@ -35,17 +35,19 @@ class ABCmp(object):
                             for k,v in self.data_summary.iteritems()]))
         
     def sample(self, nsamples, acc_ratio):
+
         queue = multiprocessing.Queue(1000)
         res = multiprocessing.Queue(1000)
         
-        samplers = [Sampler(queue, self.f_prior, self.f_model, self.f_summarize) \
+        samplers = [Sampler(queue, self.f_prior, 
+                                   self.f_model, 
+                                   self.f_summarize) \
                                 for ii in range(self.nworkers*2/3)]
         
         
         
         for w in samplers:
             w.start()
-        
 
         ntest = int(1.0/acc_ratio)
         samples = []
@@ -56,19 +58,17 @@ class ABCmp(object):
             samples.append(dist)
         
         s_samples = sorted(samples)
-        thr = s_samples[int(.4*ntest)]
-        #t_high = (thr + max(samples, key=(lambda x: x[1]))[1])/2.0
+        
+        thr = [s_samples[int(k*10/ntest)] for k in range(10)]
+
         t_high = multiprocessing.Value(c_double,s_samples[-1])
-        #sys.stderr.write("t_high: " + str(t_high) + '\n')
-        #print "Queues tuned"
         
         evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
                         for ii in range(self.nworkers/3)]
         for s in evaluators:
             s.start()
 
-
-        samples = [[],[]]
+        samples = [[]]*10
         
         for ii in range(nsamples):
 
@@ -79,10 +79,11 @@ class ABCmp(object):
             params, dist = res.get()
             if params is None:
                 break
-            if dist < thr:
-                samples[0].append((params, dist))
-            else:
-                samples[1].append((params, dist))
+            cur_slice = 0
+            while dist < thr[cur_slice]:
+                cur_slice += 1
+            samples[cur_slice].append((params, dist))
+            
             
             
         sys.stderr.write("\rSampling 100% completed\n")
@@ -93,9 +94,9 @@ class ABCmp(object):
             w.terminate()
         for s in evaluators:
             s.terminate()
-        if DEBUG is True:
-            sys.stderr.write("Lower queue size: " + str(len(samples[0])) + '\n')
-            sys.stderr.write("Higher queue size: " + str(len(samples[1])) + '\n')
+#        if DEBUG is True:
+#            sys.stderr.write("Lower queue size: " + str(len(samples[0])) + '\n')
+#            sys.stderr.write("Higher queue size: " + str(len(samples[1])) + '\n')
 
 
 
