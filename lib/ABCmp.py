@@ -95,7 +95,7 @@ class ABCmp(object):
             s.terminate()
         for w in evaluators:
             w.terminate()
-        sys.stderr.write("\rSampling completed        \n")
+        sys.stderr.write("\rSampling completed                                   \n")
 
 #        if DEBUG is True:
 #            sys.stderr.write("Lower queue size: " + str(len(samples[0])) + '\n')
