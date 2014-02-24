@@ -78,8 +78,8 @@ class ABCmp(object):
         
         for ii in range(nsamples):
             if ii % int(nsamples/100) == 1:
-                sys.stdout.write("\rSampling " + str(int(ii / (nsamples/100))) + "% complete")
-                sys.stdout.flush()
+                sys.stderr.write("\rSampling " + str(int(ii / (nsamples/100))) + "% complete")
+                sys.stderr.flush()
             params, dist = res.get()
             if params is None:
                 continue
