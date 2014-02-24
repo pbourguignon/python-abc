@@ -82,7 +82,7 @@ class ABCmp(object):
             for cur_slice in range(11):
                 if dist < thr[cur_slice]:
                     samples[cur_slice].append((params, dist))
-            
+                    break
             
             
         sys.stderr.write("\rSampling 100% completed\n")
