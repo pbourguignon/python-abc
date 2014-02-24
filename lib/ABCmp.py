@@ -75,6 +75,8 @@ class ABCmp(object):
         
         for ii in range(nsamples):
             params, dist = res.get()
+            if params is None:
+                continue
             for ss in range(len(thr)):
                 if dist < thr[ss]:
                     samples[ss].append((params, dist))
