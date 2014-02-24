@@ -44,7 +44,7 @@ class ABCmp(object):
         samplers = [Sampler(queue, self.f_prior, 
                                    self.f_model, 
                                    self.f_summarize) \
-                                for ii in range(self.nworkers*2/3)]
+                                for ii in range(self.nworkers/2)]
         
         
         
@@ -69,7 +69,7 @@ class ABCmp(object):
     
         
         evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
-                        for ii in range(self.nworkers/3)]
+                        for ii in range(self.nworkers/2)]
         for s in evaluators:
             s.start()
 
