@@ -59,7 +59,7 @@ class ABCmp(object):
         
         s_samples = sorted(samples)
         
-        thr = [s_samples[int(k*ntest/10)] for k in range(8)]
+        thr = [s_samples[int(k*ntest/10)] for k in range(10)]
         t_high = multiprocessing.Value(c_double,thr[-1])
     
         del samples, s_samples    
