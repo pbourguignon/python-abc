@@ -51,7 +51,7 @@ class ABCmp(object):
         for w in samplers:
             w.start()
 
-        ntest = max(1000, int(1.0/acc_ratio))
+        ntest = max(1000, int(2.0/acc_ratio))
         samples = []
 
         for ii in range(ntest):
@@ -61,7 +61,7 @@ class ABCmp(object):
         
         s_samples = sorted(samples)
         
-        thr = [s_samples[int(k*ntest/20)] for k in range(5)]
+        thr = [s_samples[int(k*ntest/50)] for k in range(10)]
         t_high = multiprocessing.Value(c_double,thr[-1])
     
         del samples, s_samples    
