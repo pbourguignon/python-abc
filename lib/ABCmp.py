@@ -14,10 +14,11 @@ import os
 DEBUG = False
 
 class ABCmp(object):
-    def __init__(self, data, f_prior, f_model, f_summarize, nworkers=2):
+    def __init__(self, data, f_prior, f_model, f_summarize, nsamplers=2, nevaluators=2):
         if DEBUG is True:
             sys.stderr.write("Debug mode activated\n")
-        self.nworkers = nworkers        
+        self.nsamplers = nsamplers
+        self.nevaluators = nevaluators
         self.f_summarize, self.f_prior, self.f_model = \
                                             f_summarize, f_prior, f_model        
         self.data_summary = self.f_summarize(data)
@@ -44,7 +45,7 @@ class ABCmp(object):
         samplers = [Sampler(queue, self.f_prior, 
                                    self.f_model, 
                                    self.f_summarize) \
-                                for ii in range(self.nworkers*2/5)]
+                                for ii in range(self.nsamplers)]
         
         
         
@@ -69,7 +70,7 @@ class ABCmp(object):
     
         
         evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
-                        for ii in range(self.nworkers*3/5)]
+                        for ii in range(self.nevaluators)]
         for s in evaluators:
             s.start()
 
