@@ -87,7 +87,11 @@ class ABCmp(object):
                 if dist < thr[ss]:
                     samples[ss].append((params, dist))
                     break
-                    
+        
+        for s in samplers:
+            s.terminate()
+        for w in evaluators:
+            w.terminate()
         sys.stderr.write("\rSampling completed        \n")
 
 #        if DEBUG is True:
