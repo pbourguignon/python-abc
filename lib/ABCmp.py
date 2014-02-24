@@ -36,8 +36,8 @@ class ABCmp(object):
         
     def sample(self, nsamples, acc_ratio):
 
-        queue = multiprocessing.Queue(1000)
-        res = multiprocessing.Queue(1000)
+        queue = multiprocessing.Queue(10000)
+        res = multiprocessing.Queue(10000)
         
         samplers = [Sampler(queue, self.f_prior, 
                                    self.f_model, 
