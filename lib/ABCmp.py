@@ -80,7 +80,7 @@ class ABCmp(object):
         
         for ii in range(nsamples):
             if ii % int(nsamples/100) == 1:
-                sys.stderr.write("\rSampling " + str(int(ii / (nsamples/100))) + "% complete, queue sizes " + str(queue.qsize()) + ' ' + str(res.qsize())
+                sys.stderr.write("\rSampling " + str(int(ii / (nsamples/100))) + "% complete, queue sizes " + str(queue.qsize()) + ' ' + str(res.qsize()))
                 sys.stderr.flush()
             params, dist = res.get()
             if params is None:
