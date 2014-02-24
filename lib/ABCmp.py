@@ -73,6 +73,9 @@ class ABCmp(object):
 
         samples = [[]]*len(thr)
         
+        sys.stderr.write("Starting sampling...\n")
+        sys.stderr.flush()        
+        
         for ii in range(nsamples):
             if ii % int(nsamples/100) == 0:
                 sys.stdout.write("\rSampling " + str(int(ii / (nsamples/100))) + "% complete")
