@@ -80,9 +80,9 @@ class ABCmp(object):
             params, dist = res.get()
             if params is None:
                 break
-            for cur_slice in range(11):
-                if dist < thr[cur_slice]:
-                    samples[cur_slice].append((params, dist))
+            for ii, threshold in enumerate(thr):
+                if dist < threshold:
+                    samples[ii].append((params, dist))
                     continue
             
             
