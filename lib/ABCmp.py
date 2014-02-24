@@ -63,12 +63,14 @@ class ABCmp(object):
         thr.append(s_samples[-1])
         t_high = multiprocessing.Value(c_double,thr[10])
     
+        del samples, s_samples    
+    
         evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
                         for ii in range(self.nworkers/3)]
         for s in evaluators:
             s.start()
 
-        samples = [[]]*11
+        samples = [[]]*len(thr)
         
         for ii in range(nsamples):
 
