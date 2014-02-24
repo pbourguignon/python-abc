@@ -49,7 +49,7 @@ class ABCmp(object):
         for w in samplers:
             w.start()
 
-        ntest = int(1.0/acc_ratio)
+        ntest = max(1000, int(1.0/acc_ratio))
         samples = []
 
         for ii in range(ntest):
