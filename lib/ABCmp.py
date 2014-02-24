@@ -88,7 +88,7 @@ class ABCmp(object):
                     samples[ss].append((params, dist))
                     break
                     
-        sys.stderr.write("\rSampling completed\n")
+        sys.stderr.write("\rSampling completed        \n")
 
 #        if DEBUG is True:
 #            sys.stderr.write("Lower queue size: " + str(len(samples[0])) + '\n')
