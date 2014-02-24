@@ -5,10 +5,12 @@ Created on Wed Feb 12 15:43:00 2014
 @author: P.-Y. Bourguignon - pbourguignon@isthmus.fr
 """
 
-import ABC
 import multiprocessing
 import sys
 from ctypes import c_double
+import importlib
+import os
+
 DEBUG = False
 
 class ABCmp(object):
@@ -59,7 +61,7 @@ class ABCmp(object):
         
         s_samples = sorted(samples)
         
-        thr = [s_samples[int(k*ntest/10)] for k in range(5)]
+        thr = [s_samples[int(k*ntest/20)] for k in range(5)]
         t_high = multiprocessing.Value(c_double,thr[-1])
     
         del samples, s_samples    
@@ -141,12 +143,14 @@ class Evaluator(multiprocessing.Process):
             else:
                 self.res.put((None, None))
 
-
 if __name__ == '__main__':
     nsamples = int(sys.argv[1])
     acc_ratio = float(sys.argv[2])
     ncpus = int(sys.argv[3])
-    module = sys.argv[4]
+    mod_path = os.path.dirname(sys.argv[4])
+    sys.path.append(mod_path)    
+    mod = importlib.import_module(os.path.basename(sys.argv[4].replace(".py","")))
+    
     # Data in the form of x_hat
     data = {'x_hat': [1.05,
                       0.95,1.03,
@@ -158,6 +162,7 @@ if __name__ == '__main__':
                 'beta_y':  (2.0,10),
                 'beta_o':  (2.0,10),}
 
-    sampler = ABCmp(data, lambda: ABC.lt_prior(h_params), lambda x: ABC.lt_noisy_obs(ABC.lt_model(x,4)), ABC.lt_summarize, nworkers=ncpus)
+    sampler = ABCmp(data, lambda: mod.lt_prior(h_params), lambda x: mod.lt_noisy_obs(mod.lt_model(x,4)), mod.lt_summarize, nworkers=ncpus)
     res = sampler.sample(nsamples,acc_ratio)
-    #print res
+    for val in res:
+        print mod.lt_format(val)
