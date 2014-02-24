@@ -59,16 +59,16 @@ class ABCmp(object):
         
         s_samples = sorted(samples)
         
-        thr = [s_samples[int(k*10/ntest)] for k in range(10)]
+        thr = [s_samples[int(k*ntest/10)] for k in range(11)]
 
-        t_high = multiprocessing.Value(c_double,s_samples[-1])
-        
+        t_high = multiprocessing.Value(c_double,thr[10])
+    
         evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
                         for ii in range(self.nworkers/3)]
         for s in evaluators:
             s.start()
 
-        samples = [[]]*10
+        samples = [[]]*11
         
         for ii in range(nsamples):
 
@@ -79,10 +79,9 @@ class ABCmp(object):
             params, dist = res.get()
             if params is None:
                 break
-            cur_slice = 0
-            while dist < thr[cur_slice]:
-                cur_slice += 1
-            samples[cur_slice].append((params, dist))
+            for cur_slice in range(11):
+                if dist < thr[cur_slice]:
+                    samples[cur_slice].append((params, dist))
             
             
             
