@@ -63,7 +63,9 @@ class ABCmp(object):
         t_high = multiprocessing.Value(c_double,thr[-1])
     
         del samples, s_samples    
+                
     
+        
         evaluators = [Evaluator(queue, res, t_high, self.f_distance) \
                         for ii in range(self.nworkers/3)]
         for s in evaluators:
@@ -72,45 +74,31 @@ class ABCmp(object):
         samples = [[]]*len(thr)
         
         for ii in range(nsamples):
-
-            if ii % (nsamples / 100) == 0:
-                sys.stderr.write("\rSampling "+ str(ii / (nsamples/100)) + "% completed")
-                sys.stderr.flush()
-                
             params, dist = res.get()
-            if params is None:
-                break
-            for ii, threshold in enumerate(thr):
-                if dist < threshold:
-                    samples[ii].append((params, dist))
-                    continue
-            
-            
-        sys.stderr.write("\rSampling 100% completed\n")
+            for ss in range(len(thr)):
+                if dist < thr[ss]:
+                    samples[ss].append((params, dist))
+                    break
+                    
+        sys.stderr.write("\rSampling completed\n")
 
-
-
-        for w in samplers:
-            w.terminate()
-        for s in evaluators:
-            s.terminate()
 #        if DEBUG is True:
 #            sys.stderr.write("Lower queue size: " + str(len(samples[0])) + '\n')
 #            sys.stderr.write("Higher queue size: " + str(len(samples[1])) + '\n')
 
 
 
-        res = []
+        results = []
         cur_slice = 0
         ntarget = int(nsamples * acc_ratio)
-        while len(res) < ntarget:
-            if len(samples[cur_slice]) + len(res) < ntarget:
-                res = res + [x[0] for x in samples[cur_slice]]
+        while len(results) < ntarget:
+            if len(samples[cur_slice]) + len(results) < ntarget:
+                results = results + [x[0] for x in samples[cur_slice]]
             else:
                 s_slice = sorted(samples[cur_slice], key=lambda x: x[1])
-                res = res + [x[0] for x in s_slice[0:ntarget-len(res)]]
+                results = results + [x[0] for x in s_slice[0:ntarget-len(results)]]
         
-        return res
+        return results
 
     
 
