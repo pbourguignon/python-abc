@@ -74,6 +74,8 @@ class ABCmp(object):
         samples = [[]]*len(thr)
         
         for ii in range(nsamples):
+            if ii % int(nsamples/100) == 0:
+                print "\rSampling " + str(int(ii / (nsamples/100))) + "% complete",
             params, dist = res.get()
             if params is None:
                 continue
