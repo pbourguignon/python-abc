@@ -82,7 +82,7 @@ class ABCmp(object):
         #TODO
         # Make sure the queue is fully consumed, otherwise
         # sample statistics are invalid
-        results = [x[0] for x in sorted(samples)[0:int(nsamples*acc_ratio)]]
+        results = [x[0] for x in sorted(samples, key=lambda x: x[1])[0:int(nsamples*acc_ratio)]]
         return results
 
     
