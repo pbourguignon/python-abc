@@ -43,7 +43,8 @@ class ABCmp(object):
         s_samples = sorted(samples)
 
         queue = multiprocessing.Queue(queue_size)
-        t_high = multiprocessing.RawValue(c_double, s_samples[int(2*ntest*acc_ratio)])
+        t_high = multiprocessing.RawValue(c_double, 
+                                          s_samples[int(2*ntest*acc_ratio)])
         ndiscards = [multiprocessing.Value(c_int, 0)\
                         for ii in range(self.nworkers)]
         workers = [Sampler(queue, ndiscards[ii], t_high,
@@ -62,7 +63,9 @@ class ABCmp(object):
         clock = Timer()
         log_time = clock.timer()
         while True:
-            if clock.timer() - log_time > 5:
+            now = clock.timer()
+            if now - log_time > .1:
+                log_time = now
                 nd = sum([ndiscards[ii].value for ii in range(self.nworkers)])
                 ndraws = nd + nvalids
                 debug("\rSampling " + 
@@ -82,7 +85,8 @@ class ABCmp(object):
         #TODO
         # Make sure the queue is fully consumed, otherwise
         # sample statistics are invalid
-        results = [x[0] for x in sorted(samples, key=lambda x: x[1])[0:int(nsamples*acc_ratio)]]
+        results = [x[0] for x in sorted(samples,\
+                                       key=lambda x: x[1])[0:int(nsamples*acc_ratio)]]
         return results
 
     
