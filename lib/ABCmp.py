@@ -35,16 +35,11 @@ class ABCmp(object):
         return (lambda s: sum([(s[k]-v)**2/w[k] \
                             for k,v in self.data_summary.iteritems()]))
         
-    def sample(self, nsamples, acc_ratio, queue_size=1000):
-        ntest = max(1000, int(2.0/acc_ratio))
-        samples = [self.f_distance(self.f_statistics(self.f_prior()))\
-                    for ii in range(ntest)]
         
-        s_samples = sorted(samples)
-
+    def sample(self, nsamples, acc_ratio, queue_size=1000):
+        
         queue = multiprocessing.Queue(queue_size)
-        t_high = multiprocessing.RawValue(c_double, 
-                                          s_samples[int(2*ntest*acc_ratio)])
+        t_high = multiprocessing.Value(c_double, sys.float_info.max)
         ndiscards = [multiprocessing.Value(c_int, 0)\
                         for ii in range(self.nworkers)]
         workers = [Sampler(queue, ndiscards[ii], t_high,
@@ -52,10 +47,13 @@ class ABCmp(object):
                            self.f_statistics, 
                            self.f_distance)
                                 for ii in range(self.nworkers)]
-        
         for w in workers:
             w.start()
-
+                                    
+        ntest = max(1000, int(2.0/acc_ratio))
+        samples = [queue.get()[1] for ii in range(ntest)]
+        
+        t_high.value = sorted(samples)[int(2*ntest*acc_ratio)]
         samples = []
         
         debug("Starting sampling...\n")
@@ -64,7 +62,7 @@ class ABCmp(object):
         log_time = clock.timer()
         while True:
             now = clock.timer()
-            if now - log_time > .1:
+            if now - log_time > .1 :
                 log_time = now
                 nd = sum([ndiscards[ii].value for ii in range(self.nworkers)])
                 ndraws = nd + nvalids
@@ -88,8 +86,6 @@ class ABCmp(object):
         results = [x[0] for x in sorted(samples,\
                                        key=lambda x: x[1])[0:int(nsamples*acc_ratio)]]
         return results
-
-    
 
 class Sampler(multiprocessing.Process):
     def __init__(self, queue, ndiscards, t_high,
