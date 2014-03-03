@@ -8,19 +8,23 @@ a parallel version based on the multiprocessing module.
 Basic usage
 -----------
 
-The sampler comes in two flavor: a non-parallel version (in module ABC.py) and
-a parallel version (in module ABCmp.py). Both interfaces are mostly identical.
+A frontend to the sampler is provided. All you need to provide is a python module exposing functions:
 
-The main class is ABC.ABCSampler (ABCmp.ABCmp respectively). Its constructor takes references to functions:
+* *prior(hparams)*
+	return a sample @params@ from the prior
 
-* *f_prior*
-    generates samples from the prior distribution
+* *statistics(params)*
+	return a sample of the statistics (should be a dictionary, like @{'avg': 1.02, 'std': 0.201}@
 
-* *f_model*
-    takes an output from f_prior, and returns a sample from the model
 
-* *f_summarize*
-    takes an output from f_model, and returns summary statistics
+Library usage
+-------------
+
+The sampler comes in two flavor: a non-parallel version (in module ABC.py), mostly meant
+for educational purposes,  and a parallel version (in module ABCmp.py). Both interfaces are mostly identical.
+
+The main class is ABC.ABCSampler (ABCmp.ABCmp respectively). Its constructor takes references to the functions 
+@prior@ and @statistisc@ above. Optionally, a custom distance function can also be used.
 
 If these functions are available from a single module *user_module*, then a
 simple code like would do the job:
