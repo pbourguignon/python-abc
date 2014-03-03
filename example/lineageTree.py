@@ -143,7 +143,7 @@ def lt_load_data(filename):
     with open(filename) as f:
         for l in f.readlines():
             data += [float(x) for x in l.split()]
-    return data
+    return lt_summarize({'x_hat': data})
 
 def lt_load_h_params(filename):
     """
@@ -154,8 +154,21 @@ def lt_load_h_params(filename):
         #print content
     return json.loads(content)
 
+def lt_sample(params):
+    return lt_summarize(lt_noisy_obs(lt_model(params, 4))) 
+
 def lt_format(params):
     return "%(mu_x)s\t%(sigma_x2)s\t%(beta_y)s\t%(beta_o)s" % params
     
 
-        
+def example_data():
+    return  {'x_hat': [1.05,
+                      0.95,1.03,
+                      .92,.99,.98,1.03,
+                      .98,.91,.95,1.04,1.1,0.99,1.06,.99]}
+
+def example_h_params():            
+    return {'mu_x':    (1.25,1.1),
+            'sigma_x2':(5, .02),
+            'beta_y':  (2.0,10),
+            'beta_o':  (2.0,10),}

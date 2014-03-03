@@ -13,15 +13,17 @@ import os
 import importlib
 
 def debug(msg):
-    sys.stderr.write(msg)
-    sys.stderr.flush()
+    pass
 
 class ABCmp(object):
-    def __init__(self, data_summary, f_prior, f_statistics, nworkers=2):
+    def __init__(self, data_summary, f_prior, f_statistics, f_distance=None, nworkers=2):
         self.nworkers = nworkers
         self.f_prior, self.f_statistics = f_prior, f_statistics
         self.data_summary = data_summary
-        self.f_distance = self.learn_distance()
+        if f_distance is None:
+            self.f_distance = self.learn_distance()
+        else:
+            self.f_distance = lambda x: f_distance(data_summary, x)
 
     def learn_distance(self, size=100):
         samples = [self.f_statistics(self.f_prior()) \
@@ -56,7 +58,6 @@ class ABCmp(object):
         t_high.value = sorted(samples)[int(2*ntest*acc_ratio)]
         samples = []
         
-        debug("Starting sampling...\n")
         nvalids = 0
         clock = Timer()
         log_time = clock.timer()
@@ -78,13 +79,18 @@ class ABCmp(object):
             
         for w in workers:
             w.terminate()
+
         debug("\rSampling completed      \n")
         debug("Queue size: " + str(nvalids) + '\n')
         #TODO
         # Make sure the queue is fully consumed, otherwise
         # sample statistics are invalid
+        if len(samples) < nsamples*acc_ratio:
+            raise BufferError("Incomplete sample, only %i available" % len(samples))
+
         results = [x[0] for x in sorted(samples,\
                                        key=lambda x: x[1])[0:int(nsamples*acc_ratio)]]
+        
         return results
 
 class Sampler(multiprocessing.Process):
@@ -107,6 +113,14 @@ class Sampler(multiprocessing.Process):
                 self.ndiscards.value += 1
             
 if __name__ == '__main__':
+    if sys.argv[1] == "-h":
+        print "Usage: %s nsamples acc_ratio ncpus path_to_module" % sys.argv[0]
+        exit(0)
+        
+    def debug(msg):
+        sys.stderr.write(msg)
+        sys.stderr.flush()
+
     nsamples = int(sys.argv[1])
     acc_ratio = float(sys.argv[2])
     ncpus = int(sys.argv[3])
@@ -115,17 +129,12 @@ if __name__ == '__main__':
     mod = importlib.import_module(os.path.basename(sys.argv[4].replace(".py","")))
     
     # Data in the form of x_hat
-    data = {'x_hat': [1.05,
-                      0.95,1.03,
-                      .92,.99,.98,1.03,
-                      .98,.91,.95,1.04,1.1,0.99,1.06,.99]}
-                      
-    h_params = {'mu_x':    (1.25,1.1),
-                'sigma_x2':(5, .02),
-                'beta_y':  (2.0,10),
-                'beta_o':  (2.0,10),}
-
-    sampler = ABCmp(mod.lt_summarize(data), lambda: mod.lt_prior(h_params), lambda x: mod.lt_summarize(mod.lt_noisy_obs(mod.lt_model(x,4))), nworkers=ncpus)
+    data = mod.example_data()
+    h_params = mod.example_h_params()
+    sampler = ABCmp(mod.lt_summarize(data), 
+                    lambda: mod.lt_prior(h_params), 
+                    lambda x: mod.lt_summarize(mod.lt_noisy_obs(mod.lt_model(x,4))), 
+                    nworkers=ncpus)
     res = sampler.sample(nsamples,acc_ratio)
     for val in res:
         print mod.lt_format(val)
