@@ -17,8 +17,8 @@ A frontend to the sampler is provided. All you need to provide is a python modul
 	return a sample of the statistics (should be a dictionary, like @{'avg': 1.02, 'std': 0.201}@
 
 
-Library usage
--------------
+Library usage (OUTDATED)
+------------------------
 
 The sampler comes in two flavor: a non-parallel version (in module ABC.py), mostly meant
 for educational purposes,  and a parallel version (in module ABCmp.py). Both interfaces are mostly identical.
