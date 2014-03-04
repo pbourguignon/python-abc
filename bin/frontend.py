@@ -26,10 +26,14 @@ This file was created on Fri Feb 28 20:10:13 2014
 
 import sys
 import os
+import datetime
 import argparse
 import ABCmp
 
 F_NAMES=["prior", "stat", "load_params", "load_data", "format"]
+
+def debug(msg):
+    pass
 
 def init():
     
@@ -65,7 +69,10 @@ def init():
                  "required": True, "type": float}),
                (["-c", "--ncpus"],
                 {"help": "Number of processes (defaults to 1)",
-                 "type": int, "default": 1})]
+                 "type": int, "default": 1}),
+               (["-v", "--verbose"],
+                {"help": "Turn on log output",
+                 "action": "store_true"})]
     parser = argparse.ArgumentParser(description="""
         This program runs Approximate Bayesian Computation (ABC) simulations, 
         calling user-provided functions for model-dependent operations (like
@@ -75,6 +82,25 @@ def init():
         parser.add_argument(*opt[0],**opt[1])
 
     settings = parser.parse_args()
+
+    summary  = "ABCmp running on %s at %s\n\n" % (os.uname()[1], 
+                                             str(datetime.datetime.now()))
+    summary += "  Data file:\t\t%s\n" % settings.data
+    summary += "  Hyperparameters file:\t%s\n" % settings.params
+    summary += "  Module file:\t\t%s\n" % settings.module
+    summary += "  Sample size:\t\t%i\n" % settings.nsamples
+    summary += "  Acc. ratio:\t\t%f\n" % settings.ratio    
+    summary += "\n"
+    sys.stderr.write(summary) 
+
+    if settings.verbose:
+        def verbose_debug(msg):
+            sys.stderr.write(msg)
+            sys.stderr.flush()
+        debug = verbose_debug
+        ABCmp.debug = verbose_debug
+
+       
     
     f_user_names = {k: settings.__getattribute__(k) for k in F_NAMES}
     functions = load_user_module(settings.module, f_user_names)
@@ -90,11 +116,11 @@ def load_user_module(filename, f_user_names):
         sys.path.insert(0, path)
         umodule = __import__(module_name, 
                              globals(), locals(),
-                             f_user_names)
+                             [])
     except:
         print "Could not import module %s" % module_name
         exit(0)
-    
+
     functions = {k: umodule.__getattribute__(f_user_names[k])\
                         for k in F_NAMES}
     
