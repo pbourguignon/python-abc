@@ -28,9 +28,10 @@ import sys
 import os
 import datetime
 import argparse
+import ConfigParser
 import ABCmp
 
-F_NAMES=["prior", "stat", "load_params", "load_data", "format"]
+F_NAMES=["prior", "stat", "load-params", "load-data", "format"]
 
 def debug(msg):
     pass
@@ -39,22 +40,19 @@ def init():
     
     options = [(["-m", "--module"],
                 {"help": "Path to the user module",
-                 "required": True}),
+                 "required": False}),
                (["--prior"],
-                {"help": "Prior sampling function",
-                 "default": "prior_r"}),
+                {"help": "Prior sampling function"}),
                (["--stat"],
-                {"help": "Statistics sampling function",
-                 "default": "statistics_r"}),
+                {"help": "Statistics sampling function"}),
                (["--load-params"],
                 {"help": "Hyperparameters loading functions",
-                 "default": "load_params"}),
+                 "dest": "load-params"}),
                (["--load-data"],
                 {"help": "Data loading function",
-                 "default": "load_data"}),
+                 "dest": "load-data"}),
                (["--format"],
-                {"help": "Parameters printing function",
-                 "default": "format_param"}),
+                {"help": "Parameters printing function"}),
                (["-p","--params"],
                 {"help": "Hyperparameters file",
                  "required": True}),
@@ -81,29 +79,44 @@ def init():
     for opt in options:
         parser.add_argument(*opt[0],**opt[1])
 
-    settings = parser.parse_args()
+    settings = {}
 
+    try:
+        cfg = ConfigParser.ConfigParser()
+        cfg.read(".abcrc")
+        for k in cfg.options("core"):
+            settings[k] = cfg.get("core", k)
+    except:
+        sys.stderr.write("No config file found\n")
+        sys.stderr.flush()
+
+    print settings
+
+    options = vars(parser.parse_args())
+    
+    for opt in options.keys():
+        if options[opt] is not None:
+            settings[opt] = options[opt]
+    
     summary  = "ABCmp running on %s at %s\n\n" % (os.uname()[1], 
                                              str(datetime.datetime.now()))
-    summary += "  Data file:\t\t%s\n" % settings.data
-    summary += "  Hyperparameters file:\t%s\n" % settings.params
-    summary += "  Module file:\t\t%s\n" % settings.module
-    summary += "  Sample size:\t\t%i\n" % settings.nsamples
-    summary += "  Acc. ratio:\t\t%f\n" % settings.ratio    
+    summary += "  Data file:\t\t%s\n" % settings['data']
+    summary += "  Hyperparameters file:\t%s\n" % settings['params']
+    summary += "  Module file:\t\t%s\n" % settings['module']
+    summary += "  Sample size:\t\t%i\n" % settings['nsamples']
+    summary += "  Acc. ratio:\t\t%f\n" % settings['ratio']
     summary += "\n"
     sys.stderr.write(summary) 
 
-    if settings.verbose:
+    if settings['verbose']:
         def verbose_debug(msg):
             sys.stderr.write(msg)
             sys.stderr.flush()
-        debug = verbose_debug
+        globals()['debug'] = verbose_debug
         ABCmp.debug = verbose_debug
-
-       
     
-    f_user_names = {k: settings.__getattribute__(k) for k in F_NAMES}
-    functions = load_user_module(settings.module, f_user_names)
+    f_user_names = {k: settings[k] for k in F_NAMES}
+    functions = load_user_module(settings['module'], f_user_names)
     
     return settings, functions
 
@@ -128,11 +141,19 @@ def load_user_module(filename, f_user_names):
 
 if __name__ == '__main__':
     options, functions = init()
-        
-    data_summary = functions['load_data'](options.data)
-    hparams = functions['load_params'](options.params)    
     
+    debug("Loading data...")    
+    data_summary = functions['load-data'](options['data'])
+    debug("\rData loaded      \n")
+    debug("Loading hyperparameters...")
+    hparams = functions['load-params'](options['params'])
+    debug("\rHyperparameters loaded     \n")
+
+    debug("Instantiating sampler...")    
     sampler = ABCmp.ABCmp(data_summary, lambda: functions["prior"](hparams),
-                          functions["stat"], nworkers=options.ncpus)
-    for res in sampler.sample(options.nsamples, options.ratio):
+                          functions["stat"], nworkers=options['ncpus'])
+    debug("\rSampler instantiated     \n")
+    debug("Running sampler...\n")
+    for res in sampler.sample(options['nsamples'], options['ratio']):
         print functions["format"](res)
+    debug("Sampling finished, bye!\n")
