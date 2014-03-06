@@ -68,9 +68,9 @@ class ABCmp(object):
                 log_time = now
                 nd = sum([ndiscards[ii].value for ii in range(self.nworkers)])
                 ndraws = nd + nvalids
-                debug("\rSampling " + 
+                debug("Sampling " + 
                      str(int(ndraws / (nsamples/100))) + 
-                     "% complete")
+                     "% complete\r")
                 if ndraws > nsamples:
                     break
             
@@ -81,7 +81,7 @@ class ABCmp(object):
         for w in workers:
             w.terminate()
 
-        debug("\rSampling completed      \n")
+        debug("Sampling completed      \n")
         debug("Queue size: " + str(nvalids) + '\n')
         #TODO
         # Make sure the queue is fully consumed, otherwise

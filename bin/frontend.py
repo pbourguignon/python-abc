@@ -66,8 +66,8 @@ def init():
                 {"help": "Proportion of closest samples to keep",
                  "required": True, "type": float}),
                (["-c", "--ncpus"],
-                {"help": "Number of processes (defaults to 1)",
-                 "type": int, "default": 1}),
+                {"help": "Number of processes (default: autodetect)",
+                 "type": int}),
                (["-v", "--verbose"],
                 {"help": "Turn on log output",
                  "action": "store_true"})]
@@ -112,13 +112,18 @@ def init():
 
     if settings['verbose']:
         def verbose_debug(msg):
-            sys.stderr.write(msg)
+            sys.stderr.write("[" + str(datetime.datetime.now())+"] " + msg)
             sys.stderr.flush()
         globals()['debug'] = verbose_debug
         ABCmp.debug = verbose_debug
     
     f_user_names = {k: settings[k] for k in F_NAMES}
     functions = load_user_module(settings['module'], f_user_names)
+    
+    if not settings.has_key("ncpus"):
+        debug("Detecting number of CPUs...\r")    
+        settings["ncpus"] = ABCmp.multiprocessing.cpu_count()
+        debug("Detected %i CPUs            \n" % settings["ncpus"] )
     
     return settings, functions
 
@@ -144,17 +149,17 @@ def load_user_module(filename, f_user_names):
 if __name__ == '__main__':
     options, functions = init()
     
-    debug("Loading data...")    
+    debug("Loading data...\r")    
     data_summary = functions['load-data'](options['data'])
-    debug("\rData loaded      \n")
-    debug("Loading hyperparameters...")
+    debug("Data loaded      \n")
+    debug("Loading hyperparameters...\r")
     hparams = functions['load-params'](options['params'])
-    debug("\rHyperparameters loaded     \n")
+    debug("Hyperparameters loaded     \n")
 
-    debug("Instantiating sampler...")    
+    debug("Instantiating sampler...\r")    
     sampler = ABCmp.ABCmp(data_summary, lambda: functions["prior"](hparams),
                           functions["stat"], nworkers=options['ncpus'])
-    debug("\rSampler instantiated     \n")
+    debug("Sampler instantiated     \n")
     debug("Running sampler...\n")
     for res in sampler.sample(options['nsamples'], options['ratio']):
         print functions["format"](res)
