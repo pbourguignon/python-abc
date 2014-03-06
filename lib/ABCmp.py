@@ -16,9 +16,6 @@ import importlib
 def debug(msg):
     pass
 
-def welcome():
-    debug("Welcome!\n")
-
 class ABCmp(object):
     def __init__(self, data_summary, f_prior, f_statistics, f_distance=None, nworkers=2):
         self.nworkers = nworkers

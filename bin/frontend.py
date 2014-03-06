@@ -42,17 +42,17 @@ def init():
                 {"help": "Path to the user module",
                  "required": False}),
                (["--prior"],
-                {"help": "Prior sampling function"}),
+                {"help": "Prior sampling function (default; prior_r)"}),
                (["--stat"],
-                {"help": "Statistics sampling function"}),
+                {"help": "Statistics sampling function (default: stat_r)"}),
                (["--load-params"],
-                {"help": "Hyperparameters loading functions",
+                {"help": "Hyperparameters loading functions (default: load_params)",
                  "dest": "load-params"}),
                (["--load-data"],
-                {"help": "Data loading function",
+                {"help": "Data loading function (default: load_data)",
                  "dest": "load-data"}),
                (["--format"],
-                {"help": "Parameters printing function"}),
+                {"help": "Parameters printing function (default: format)"}),
                (["-p","--params"],
                 {"help": "Hyperparameters file",
                  "required": True}),
@@ -75,6 +75,10 @@ def init():
         This program runs Approximate Bayesian Computation (ABC) simulations, 
         calling user-provided functions for model-dependent operations (like
         sampling parameters from the prior, or statistics given parameters).
+        
+        A configuration file named .abcrc will be searched in the working
+        directory, and the corresponding options loaded with lower priority
+        than the command-line options.
         """)
     for opt in options:
         parser.add_argument(*opt[0],**opt[1])
@@ -90,15 +94,13 @@ def init():
         sys.stderr.write("No config file found\n")
         sys.stderr.flush()
 
-    print settings
-
     options = vars(parser.parse_args())
     
     for opt in options.keys():
         if options[opt] is not None:
             settings[opt] = options[opt]
     
-    summary  = "ABCmp running on %s at %s\n\n" % (os.uname()[1], 
+    summary  = "\nABCmp running on %s at %s\n\n" % (os.uname()[1], 
                                              str(datetime.datetime.now()))
     summary += "  Data file:\t\t%s\n" % settings['data']
     summary += "  Hyperparameters file:\t%s\n" % settings['params']
