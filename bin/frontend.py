@@ -4,18 +4,24 @@
 A frontend to the python-abc library.
 
 Assumes that the user provides a module exposing the following methods:
-- prior_r() 
-    When called they should return a sample parameter drawn from the prior
+- prior_r(hparams) 
+    Return a sample parameter drawn from the prior
 - statistics_r(params)
-    When called with a parameter, returns a sample of the summarizing 
+    Return a sample of the summarizing 
     statistics
 - load_params(filename)
     Loads the hyperparameters and returns them for use as an argument of
     prior_r
 - load_data(filename)
     Loads the data and returns their summary statistics
-- format(params)
-    Will be used to print the results
+- distance(data_summary, sample_summary)
+    Return the distance between summary statistics. 
+    Optional, a learning method is embedded in the sampler.
+- format(param)
+    Return the formatted parameters for output
+
+Alternative function names can be provided on the command-line
+or in an INI-formatted configuration file in the working directory.
 
 python-abc is free software, distributed under the GPL license.
 
@@ -112,7 +118,7 @@ def init():
 
     if settings['verbose']:
         def verbose_debug(msg):
-            sys.stderr.write("[" + str(datetime.datetime.now())+"] " + msg)
+            sys.stderr.write("[" + datetime.datetime.strftime(datetime.datetime.now(), "%D %H:%M:%S")+"] " + msg)
             sys.stderr.flush()
         globals()['debug'] = verbose_debug
         ABCmp.debug = verbose_debug
