@@ -10,12 +10,20 @@ Basic usage
 
 A frontend to the sampler is provided. All you need to provide is a python module exposing functions:
 
-* *prior(hparams)*
+* *prior_r(hparams)*
 	return a sample @params@ from the prior
 
-* *statistics(params)*
+* *statistics_r(params)*
 	return a sample of the statistics (should be a dictionary, like @{'avg': 1.02, 'std': 0.201}@
 
+* *load_params(filename)*
+	return the hyperparameters read from filename. Will be passed to prior_r untouched.
+
+* *load_data(filename)*
+	return the data summary read from filename. Will be used to compute distances
+
+* *format(param)*
+	return the string representation of the parameter for output
 
 Library usage (OUTDATED)
 ------------------------
