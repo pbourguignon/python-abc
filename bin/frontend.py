@@ -117,7 +117,7 @@ def init():
     sys.stderr.write(summary) 
 
     if settings['verbose']:
-        def verbose_debug(msg, prefix=None):
+        def verbose_debug(msg, prefix=""):
             sys.stderr.write("[" + datetime.datetime.strftime(datetime.datetime.now(), "%D %H:%M:%S ")+ prefix +"] " + msg)
             sys.stderr.flush()
         globals()['debug'] = verbose_debug
