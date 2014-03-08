@@ -81,7 +81,7 @@ class ABCmp(object):
         for w in workers:
             w.terminate()
 
-        debug("Sampling completed      \n")
+        debug("Sampling completed              \n")
         debug("Queue size: " + str(nvalids) + '\n')
         #TODO
         # Make sure the queue is fully consumed, otherwise

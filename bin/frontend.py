@@ -117,11 +117,11 @@ def init():
     sys.stderr.write(summary) 
 
     if settings['verbose']:
-        def verbose_debug(msg):
-            sys.stderr.write("[" + datetime.datetime.strftime(datetime.datetime.now(), "%D %H:%M:%S")+"] " + msg)
+        def verbose_debug(msg, prefix=None):
+            sys.stderr.write("[" + datetime.datetime.strftime(datetime.datetime.now(), "%D %H:%M:%S ")+ prefix +"] " + msg)
             sys.stderr.flush()
         globals()['debug'] = verbose_debug
-        ABCmp.debug = verbose_debug
+        ABCmp.debug = lambda x: verbose_debug(x,"ABCmp")
     
     f_user_names = {k: settings[k] for k in F_NAMES}
     functions = load_user_module(settings['module'], f_user_names)
