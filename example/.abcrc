@@ -1,0 +1,8 @@
+[core]
+module: ./lineageTree.py
+prior: lt_prior
+stat: lt_sample
+format: lt_format
+load-data: lt_load_data
+load-params: lt_load_h_params
+
