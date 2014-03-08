@@ -17,7 +17,9 @@ def debug(msg):
     pass
 
 class ABCmp(object):
-    def __init__(self, data_summary, f_prior, f_statistics, f_distance=None, nworkers=2):
+    def __init__(self, data_summary, 
+                 f_prior, f_statistics, f_distance=None, 
+                 nworkers=2):
         self.nworkers = nworkers
         self.f_prior, self.f_statistics = f_prior, f_statistics
         self.data_summary = data_summary
@@ -93,10 +95,12 @@ class ABCmp(object):
         # Make sure the queue is fully consumed, otherwise
         # sample statistics are invalid
         if len(samples) < nsamples*acc_ratio:
-            raise BufferError("Incomplete sample, only %i available" % len(samples))
+            raise BufferError("Incomplete sample, only %i available" \
+                                                       % len(samples))
 
         results = [x[0] for x in sorted(samples,\
-                                       key=lambda x: x[1])[0:int(nsamples*acc_ratio)]]
+                                        key=lambda x: x[1])\
+                                                [0:int(nsamples*acc_ratio)]]
         
         return results
 

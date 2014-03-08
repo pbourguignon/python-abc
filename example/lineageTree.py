@@ -14,7 +14,7 @@ def _gauss_pos(mean, std):
         if x > 0:
             return x
 
-def lt_prior(h_params2):
+def prior_r(h_params2):
     """
     Parameters
     ----------
@@ -33,7 +33,7 @@ def lt_prior(h_params2):
         if param['beta_y'] < param['beta_o']:
             return param
 
-def lt_model(params, nb_generations):
+def hidden_r(params, nb_generations):
     """
     Sample from the lineage tree model
     
@@ -62,11 +62,11 @@ def lt_model(params, nb_generations):
 
 
 
-def lt_noisy_obs(obs, shape = 10):
+def observations_r(obs, shape = 10):
     """
     Parameters
     ----------
-    obs            A realization of the hidden variable
+    x            A realization of the hidden variable
     shape		  The shape parameter of the added noise
 	
     Returns
@@ -80,7 +80,6 @@ def lt_noisy_obs(obs, shape = 10):
     
     xb = [None]*nb_cells
     xd = [None]*nb_splits
-    g = [None]*nb_cells ### the growth /gamma 
     
     xb[0] = 1.0
     
@@ -91,14 +90,14 @@ def lt_noisy_obs(obs, shape = 10):
 
     growth_rate = [gammavariate(shape, 1.0/(x+sys.float_info.epsilon)) for x in xb]
     
-    x_hat = [shape/g for g in growth_rate]
+    x_hat = [shape/gg for gg in growth_rate]
     
            	
-    return {'xb': xb, 'xd': xd, 'x_hat': x_hat }
+    return {'x_hat': x_hat }
    
    
    
-def lt_summarize(obs): 
+def summarize(obs): 
     """
     Parameter
     ---------
@@ -130,7 +129,7 @@ def lt_summarize(obs):
     return { 'incr_avg': incr_avg, 'incr_var': incr_var,
              'split_avg': split_avg, 'split_var': split_var }
    
-def lt_load_data(filename):
+def load_data(filename):
     """
     Reads the x_hat from a file, as indexed in the observation table
     Recommended layout:
@@ -143,9 +142,9 @@ def lt_load_data(filename):
     with open(filename) as f:
         for l in f.readlines():
             data += [float(x) for x in l.split()]
-    return lt_summarize({'x_hat': data})
+    return summarize({'x_hat': data})
 
-def lt_load_h_params(filename):
+def load_params(filename):
     """
     Reads the hyperparameters from a JSON file
     """
@@ -154,10 +153,10 @@ def lt_load_h_params(filename):
         #print content
     return json.loads(content)
 
-def lt_sample(params):
-    return lt_summarize(lt_noisy_obs(lt_model(params, 4))) 
+def statistics_r(params):
+    return summarize(observations_r(hidden_r(params, 4))) 
 
-def lt_format(params):
+def format(params):
     return "%(mu_x)s\t%(sigma_x2)s\t%(beta_y)s\t%(beta_o)s" % params
     
 
