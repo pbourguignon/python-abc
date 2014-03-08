@@ -67,7 +67,7 @@ def init():
                  "required": True}),
                (["-n", "--nsamples"],
                 {"help": "sample size",
-                 "required": True, "type": int}),
+                 "required": True, "type": float}),
                (["-r", "--ratio"],
                 {"help": "Proportion of closest samples to keep",
                  "required": True, "type": float}),
@@ -100,19 +100,20 @@ def init():
         sys.stderr.write("No config file found\n")
         sys.stderr.flush()
 
-    options = vars(parser.parse_args())
-    
+    options = vars(parser.parse_args())   
     for opt in options.keys():
         if options[opt] is not None:
             settings[opt] = options[opt]
+
+    settings["nsamples"] = int(settings["nsamples"])
     
     summary  = "\nABCmp running on %s at %s\n\n" % (os.uname()[1], 
                                              str(datetime.datetime.now()))
     summary += "  Data file:\t\t%s\n" % settings['data']
     summary += "  Hyperparameters file:\t%s\n" % settings['params']
     summary += "  Module file:\t\t%s\n" % settings['module']
-    summary += "  Sample size:\t\t%i\n" % settings['nsamples']
-    summary += "  Acc. ratio:\t\t%f\n" % settings['ratio']
+    summary += "  Sample size:\t\t%e\n" % settings['nsamples']
+    summary += "  Acc. ratio:\t\t%e\n" % settings['ratio']
     summary += "\n"
     sys.stderr.write(summary) 
 
