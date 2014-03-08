@@ -108,12 +108,15 @@ def init():
     settings["nsamples"] = int(settings["nsamples"])
 
     # Set defaults
-    settings.setdefault("prior", "prior_r")
-    settings.setdefault("stat", "statistics_r")
-    settings.setdefault("load-params", "load_params")
-    settings.setdefault("load-data", "load_data")
-    settings.setdefault("format", "format")
-       
+
+    defaults = {"prior":        "prior_r",
+                "stat":         "statistics_r",
+                "load-params":  "load_params",
+                "load-data":    "load_data",
+                "format":       "format"}
+
+    for k,v in defaults.iteritems():
+        settings.setdefault(k,v)
     
     summary  = "\nABCmp running on %s at %s\n\n" % (os.uname()[1], 
                                              str(datetime.datetime.now()))
