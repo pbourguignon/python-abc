@@ -52,12 +52,18 @@ class ABCmp(object):
                                 for ii in range(self.nworkers)]
         for w in workers:
             w.start()
-                                    
+        
+        debug("Starting calibration of the queue...\n")
+                            
         ntest = max(1000, int(2.0/acc_ratio))
         samples = [queue.get()[1] for ii in range(ntest)]
+
+        debug("Calibration done\n")        
         
         t_high.value = sorted(samples)[int(2*ntest*acc_ratio)]
         samples = []
+        
+        debug("Starting sampling\n")        
         
         nvalids = 0
         clock = Timer()
