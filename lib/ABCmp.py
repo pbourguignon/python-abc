@@ -41,7 +41,7 @@ class ABCmp(object):
                             for k,v in self.data_summary.iteritems()]))
         
         
-    def sample(self, nsamples, acc_ratio, queue_size=1000):
+    def sample(self, nsamples, acc_ratio, queue_size=10000):
         
         queue = multiprocessing.Queue(queue_size)
         t_high = multiprocessing.Value(c_double, sys.float_info.max)
